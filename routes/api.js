@@ -1,0 +1,36 @@
+// routes/api.js
+const express = require('express');
+const fs = require('fs');
+const path = require('path');
+
+const router = express.Router();
+const dataDir = path.join(__dirname, '../data');
+const projectsFile = path.join(dataDir, 'projects.json');
+const tasksFile = path.join(dataDir, 'tasks.json');
+
+function readJson(filePath) {
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch (err) {
+    console.error(`Error reading ${filePath}:`, err);
+    return [];
+  }
+}
+
+function writeJson(filePath, data) {
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+}
+
+router.get('/projects', (req, res) => {
+  const projects = readJson(projectsFile);
+  res.json(projects);
+});
+
+router.get('/tasks', (req, res) => {
+  const tasks = readJson(tasksFile);
+  const { projectId } = req.query;
+  const filtered = projectId ? tasks.filter(t => t.projectId === projectId) : tasks;
+  res.json(filtered);
+});
+
+module.exports = router;
