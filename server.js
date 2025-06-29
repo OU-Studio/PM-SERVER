@@ -1,15 +1,23 @@
-// server.js
 const express = require('express');
+const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
-const cors = require('cors');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors({
-  origin: '*', // OR use the exact Squarespace domain if you want tighter security
-}));
+// ✅ Full CORS setup
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*'); // or restrict to your Squarespace domains
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  next();
+});
+
+// Optional: respond to preflight requests
+app.options('*', (req, res) => {
+  res.sendStatus(200);
+});
 
 app.use(express.json());
 
