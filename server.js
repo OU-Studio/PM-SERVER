@@ -26,6 +26,18 @@ const dataDir = process.env.DATA_DIR || path.join(__dirname, 'data');
 const projectsFile = path.join(dataDir, 'projects.json');
 const tasksFile = path.join(dataDir, 'tasks.json');
 
+// 🔧 Auto-create files if missing
+if (!fs.existsSync(projectsFile)) {
+  console.warn('⚠️ projects.json not found, creating empty file');
+  fs.writeFileSync(projectsFile, '[]');
+}
+
+if (!fs.existsSync(tasksFile)) {
+  console.warn('⚠️ tasks.json not found, creating empty file');
+  fs.writeFileSync(tasksFile, '[]');
+}
+
+
 // Read JSON utility
 function readJson(filePath) {
   try {
