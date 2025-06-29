@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 const router = express.Router();
-const dataDir = path.join(__dirname, '../data');
+const dataDir = process.env.DATA_DIR || path.join(__dirname, 'data');
 const projectsFile = path.join(dataDir, 'projects.json');
 const tasksFile = path.join(dataDir, 'tasks.json');
 
