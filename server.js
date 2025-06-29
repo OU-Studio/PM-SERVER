@@ -7,11 +7,11 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
-
 app.use(cors({
   origin: '*', // OR use the exact Squarespace domain if you want tighter security
 }));
+
+app.use(express.json());
 
 
 const dataDir = process.env.DATA_DIR || path.join(__dirname, 'data');
