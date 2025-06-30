@@ -21,6 +21,8 @@ app.options('*', (req, res) => {
 
 app.use(express.json());
 
+app.use('/api', require('./routes/api'))
+
 
 const dataDir = process.env.DATA_DIR || path.join(__dirname, 'data');
 const projectsFile = path.join(dataDir, 'projects.json');
