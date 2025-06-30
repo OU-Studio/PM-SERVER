@@ -50,5 +50,22 @@ router.post('/tasks', (req, res) => {
   res.status(201).json(newTask);
 });
 
+router.put('/tasks/:id', (req, res) => {
+  const tasks = readJson(tasksFile);
+  const taskIndex = tasks.findIndex(t => t.id === req.params.id);
+  if (taskIndex === -1) return res.status(404).json({ error: 'Task not found' });
+
+  const updatedTask = {
+    ...tasks[taskIndex],
+    ...req.body,
+    updatedAt: new Date().toISOString()
+  };
+
+  tasks[taskIndex] = updatedTask;
+  writeJson(tasksFile, tasks);
+  res.json(updatedTask);
+});
+
+
 
 module.exports = router;
