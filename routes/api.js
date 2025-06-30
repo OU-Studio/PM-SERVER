@@ -33,4 +33,22 @@ router.get('/tasks', (req, res) => {
   res.json(filtered);
 });
 
+router.post('/tasks', (req, res) => {
+  const tasks = readJson(tasksFile);
+  const newTask = {
+    id: 'task-' + Date.now(),
+    title: req.body.title,
+    status: req.body.status || 'todo',
+    assignee: req.body.assignee || '',
+    dueDate: req.body.dueDate || '',
+    updatedAt: new Date().toISOString(),
+    projectId: req.body.projectId || null,
+    notes: req.body.notes || ''
+  };
+  tasks.push(newTask);
+  writeJson(tasksFile, tasks);
+  res.status(201).json(newTask);
+});
+
+
 module.exports = router;
