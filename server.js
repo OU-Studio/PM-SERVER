@@ -55,18 +55,7 @@ function writeJson(filePath, data) {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 }
 
-// Routes
-app.get('/api/projects', (req, res) => {
-  const projects = readJson(projectsFile);
-  res.json(projects);
-});
 
-app.get('/api/tasks', (req, res) => {
-  const tasks = readJson(tasksFile);
-  const { projectId } = req.query;
-  const filtered = projectId ? tasks.filter(t => t.projectId === projectId) : tasks;
-  res.json(filtered);
-});
 
 // Home (optional)
 app.get('/', (req, res) => {
