@@ -105,6 +105,31 @@ router.delete('/projects/:id', (req, res) => {
   res.json({ success: true });
 });
 
+const { OpenAI } = require('openai');
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+router.post('/chat', async (req, res) => {
+  const { prompt } = req.body;
+
+  if (!prompt) {
+    return res.status(400).json({ error: 'Missing prompt' });
+  }
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [{ role: 'user', content: prompt }],
+    });
+
+    const reply = completion.choices[0]?.message?.content?.trim();
+    res.json({ reply });
+  } catch (err) {
+    console.error('ChatGPT error:', err.message);
+    res.status(500).json({ error: 'Failed to fetch from OpenAI' });
+  }
+});
+
+
 
 
 
