@@ -1,4 +1,3 @@
-// routes/api.js
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
@@ -23,11 +22,13 @@ function writeJson(filePath, data) {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 }
 
+// GET all projects
 router.get('/projects', (req, res) => {
   const projects = readJson(projectsFile);
   res.json(projects);
 });
 
+// GET all tasks or tasks by projectId
 router.get('/tasks', (req, res) => {
   const tasks = readJson(tasksFile);
   const { projectId } = req.query;
@@ -35,6 +36,7 @@ router.get('/tasks', (req, res) => {
   res.json(filtered);
 });
 
+// POST a new task
 router.post('/tasks', (req, res) => {
   const tasks = readJson(tasksFile);
   const newTask = {
@@ -53,6 +55,7 @@ router.post('/tasks', (req, res) => {
   res.status(201).json(newTask);
 });
 
+// PUT update task
 router.put('/tasks/:id', (req, res) => {
   const tasks = readJson(tasksFile);
   const taskIndex = tasks.findIndex(t => t.id === req.params.id);
@@ -66,10 +69,11 @@ router.put('/tasks/:id', (req, res) => {
 
   tasks[taskIndex] = updatedTask;
   writeJson(tasksFile, tasks);
-  broadcastUpdate('task-changed', { action: 'add', task: newTask });
+  broadcastUpdate('task-changed', { action: 'update', task: updatedTask });
   res.json(updatedTask);
 });
 
+// DELETE task
 router.delete('/tasks/:id', (req, res) => {
   const tasks = readJson(tasksFile);
   const taskId = req.params.id;
@@ -77,13 +81,14 @@ router.delete('/tasks/:id', (req, res) => {
 
   if (index === -1) return res.status(404).json({ error: 'Task not found' });
 
-  tasks.splice(index, 1); // Remove task
+  const deletedTask = tasks[index];
+  tasks.splice(index, 1);
   writeJson(tasksFile, tasks);
-  broadcastUpdate('task-changed', { action: 'add', task: newTask });
+  broadcastUpdate('task-changed', { action: 'delete', task: deletedTask });
   res.json({ success: true });
 });
 
-// Add a new project
+// POST new project
 router.post('/projects', (req, res) => {
   const projects = readJson(projectsFile);
   const newProject = {
@@ -92,11 +97,10 @@ router.post('/projects', (req, res) => {
   };
   projects.push(newProject);
   writeJson(projectsFile, projects);
-  broadcastUpdate('task-changed', { action: 'add', task: newTask });
   res.status(201).json(newProject);
 });
 
-// Delete a project (and its tasks)
+// DELETE project (and its tasks)
 router.delete('/projects/:id', (req, res) => {
   const id = req.params.id;
   let projects = readJson(projectsFile);
@@ -107,11 +111,10 @@ router.delete('/projects/:id', (req, res) => {
 
   writeJson(projectsFile, projects);
   writeJson(tasksFile, tasks);
-  broadcastUpdate('task-changed', { action: 'add', task: newTask });
-
   res.json({ success: true });
 });
 
+// Chat endpoint
 const { OpenAI } = require('openai');
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -135,9 +138,5 @@ router.post('/chat', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch from OpenAI' });
   }
 });
-
-
-
-
 
 module.exports = router;
