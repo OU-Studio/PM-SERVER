@@ -5,6 +5,7 @@ const path = require('path');
 require('dotenv').config();
 
 const axios = require('axios');
+const cron = require('node-cron');
 
 
 const app = express();
@@ -59,15 +60,64 @@ function writeJson(filePath, data) {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 }
 
+//Slack
+
 const slackWebhookUrl = process.env.DATA_SLACK;
 
-axios.post(slackWebhookUrl, {
-  text: '*Test Message:* Hello from your PM server 👋'
-}).then(() => {
-  console.log('✅ Message sent to Slack!');
-}).catch(err => {
-  console.error('❌ Slack message failed:', err.message);
-});
+function getActiveTasksGroupedByProject() {
+  let tasks = [];
+  let projects = [];
+
+  try {
+    tasks = JSON.parse(fs.readFileSync(tasksFile, 'utf8'));
+    projects = JSON.parse(fs.readFileSync(projectsFile, 'utf8'));
+  } catch (err) {
+    console.error('Failed to read JSON files:', err);
+    return {};
+  }
+
+  const projectMap = {};
+  projects.forEach(p => projectMap[p.id] = p.name);
+
+  const grouped = {};
+  tasks.forEach(task => {
+    if (['todo', 'in progress'].includes(task.status)) {
+      const projectName = projectMap[task.projectId] || 'Unassigned';
+      if (!grouped[projectName]) grouped[projectName] = [];
+      grouped[projectName].push(task);
+    }
+  });
+
+  return grouped;
+}
+
+function formatSlackMessage(groupedTasks) {
+  if (Object.keys(groupedTasks).length === 0) {
+    return '*📝 Active Tasks:*\nNone!';
+  }
+
+  let message = '*📝 Active Tasks:*\n';
+
+  for (const [project, tasks] of Object.entries(groupedTasks)) {
+    message += `\n*${project}*:\n`;
+    for (const task of tasks) {
+      const due = task.dueDate ? ` (due ${task.dueDate})` : '';
+      message += `• ${task.title} – _${task.status}_${due}\n`;
+    }
+  }
+
+  return message;
+}
+
+const groupedTasks = getActiveTasksGroupedByProject();
+const message = formatSlackMessage(groupedTasks);
+
+try {
+  await axios.post(slackWebhookUrl, { text: message });
+  console.log('✅ Slack message sent');
+} catch (err) {
+  console.error('❌ Slack error:', err.message);
+}
 
 
 
