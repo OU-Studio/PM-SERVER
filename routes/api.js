@@ -66,6 +66,19 @@ router.put('/tasks/:id', (req, res) => {
   res.json(updatedTask);
 });
 
+router.delete('/tasks/:id', (req, res) => {
+  const tasks = readJson(tasksFile);
+  const taskId = req.params.id;
+  const index = tasks.findIndex(t => t.id === taskId);
+
+  if (index === -1) return res.status(404).json({ error: 'Task not found' });
+
+  tasks.splice(index, 1); // Remove task
+  writeJson(tasksFile, tasks);
+  res.json({ success: true });
+});
+
+
 
 
 module.exports = router;
