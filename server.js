@@ -112,14 +112,13 @@ function formatSlackMessage(groupedTasks) {
 const groupedTasks = getActiveTasksGroupedByProject();
 const message = formatSlackMessage(groupedTasks);
 
-try {
-  await axios.post(slackWebhookUrl, { text: message });
-  console.log('✅ Slack message sent');
-} catch (err) {
-  console.error('❌ Slack error:', err.message);
-}
-
-
+axios.post(slackWebhookUrl, {
+  text: message
+}).then(() => {
+  console.log('✅ Message sent to Slack!');
+}).catch(err => {
+  console.error('❌ Slack message failed:', err.message);
+});
 
 // Home (optional)
 app.get('/', (req, res) => {
