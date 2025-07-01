@@ -81,7 +81,7 @@ function getActiveTasksGroupedByProject() {
 
   const grouped = {};
   tasks.forEach(task => {
-    if (['todo', 'in progress'].includes(task.status)) {
+    if (['todo', 'in-progress'].includes(task.status)) {
       const projectName = projectMap[task.projectId] || 'Unassigned';
       if (!grouped[projectName]) grouped[projectName] = [];
       grouped[projectName].push(task);
@@ -119,6 +119,32 @@ axios.post(slackWebhookUrl, {
 }).catch(err => {
   console.error('❌ Slack message failed:', err.message);
 });
+
+//connections
+const clients = [];
+
+app.get('/events', (req, res) => {
+  res.set({
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive'
+  });
+  res.flushHeaders();
+
+  clients.push(res);
+
+  req.on('close', () => {
+    const i = clients.indexOf(res);
+    if (i !== -1) clients.splice(i, 1);
+  });
+});
+
+function broadcastUpdate(type, data) {
+  const payload = `event: ${type}\ndata: ${JSON.stringify(data)}\n\n`;
+  clients.forEach(client => client.write(payload));
+}
+
+module.exports.broadcastUpdate = broadcastUpdate;
 
 // Home (optional)
 app.get('/', (req, res) => {

@@ -8,6 +8,8 @@ const dataDir = process.env.DATA_DIR || path.join(__dirname, 'data');
 const projectsFile = path.join(dataDir, 'projects.json');
 const tasksFile = path.join(dataDir, 'tasks.json');
 
+const { broadcastUpdate } = require('../server');
+
 function readJson(filePath) {
   try {
     return JSON.parse(fs.readFileSync(filePath, 'utf8'));
@@ -47,6 +49,7 @@ router.post('/tasks', (req, res) => {
   };
   tasks.push(newTask);
   writeJson(tasksFile, tasks);
+  broadcastUpdate('task-changed', { action: 'add', task: newTask });
   res.status(201).json(newTask);
 });
 
@@ -63,6 +66,7 @@ router.put('/tasks/:id', (req, res) => {
 
   tasks[taskIndex] = updatedTask;
   writeJson(tasksFile, tasks);
+  broadcastUpdate('task-changed', { action: 'add', task: newTask });
   res.json(updatedTask);
 });
 
@@ -75,6 +79,7 @@ router.delete('/tasks/:id', (req, res) => {
 
   tasks.splice(index, 1); // Remove task
   writeJson(tasksFile, tasks);
+  broadcastUpdate('task-changed', { action: 'add', task: newTask });
   res.json({ success: true });
 });
 
@@ -87,6 +92,7 @@ router.post('/projects', (req, res) => {
   };
   projects.push(newProject);
   writeJson(projectsFile, projects);
+  broadcastUpdate('task-changed', { action: 'add', task: newTask });
   res.status(201).json(newProject);
 });
 
@@ -101,6 +107,7 @@ router.delete('/projects/:id', (req, res) => {
 
   writeJson(projectsFile, projects);
   writeJson(tasksFile, tasks);
+  broadcastUpdate('task-changed', { action: 'add', task: newTask });
 
   res.json({ success: true });
 });
