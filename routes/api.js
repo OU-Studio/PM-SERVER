@@ -78,6 +78,33 @@ router.delete('/tasks/:id', (req, res) => {
   res.json({ success: true });
 });
 
+// Add a new project
+router.post('/projects', (req, res) => {
+  const projects = readJson(projectsFile);
+  const newProject = {
+    id: 'proj-' + Date.now(),
+    name: req.body.name || 'Untitled Project',
+  };
+  projects.push(newProject);
+  writeJson(projectsFile, projects);
+  res.status(201).json(newProject);
+});
+
+// Delete a project (and its tasks)
+router.delete('/projects/:id', (req, res) => {
+  const id = req.params.id;
+  let projects = readJson(projectsFile);
+  let tasks = readJson(tasksFile);
+
+  projects = projects.filter(p => p.id !== id);
+  tasks = tasks.filter(t => t.projectId !== id);
+
+  writeJson(projectsFile, projects);
+  writeJson(tasksFile, tasks);
+
+  res.json({ success: true });
+});
+
 
 
 
