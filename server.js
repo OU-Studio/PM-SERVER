@@ -144,7 +144,10 @@ function broadcastUpdate(type, data) {
   clients.forEach(client => client.write(payload));
 }
 
-module.exports.broadcastUpdate = broadcastUpdate;
+module.exports = {
+  broadcastUpdate
+};
+
 
 // Home (optional)
 app.get('/', (req, res) => {
