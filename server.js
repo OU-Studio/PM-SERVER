@@ -4,6 +4,8 @@ const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
 
+const axios = require('axios');
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -56,6 +58,16 @@ function readJson(filePath) {
 function writeJson(filePath, data) {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 }
+
+const slackWebhookUrl = 'https://hooks.slack.com/services/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';
+
+axios.post(slackWebhookUrl, {
+  text: '*Test Message:* Hello from your PM server 👋'
+}).then(() => {
+  console.log('✅ Message sent to Slack!');
+}).catch(err => {
+  console.error('❌ Slack message failed:', err.message);
+});
 
 
 
