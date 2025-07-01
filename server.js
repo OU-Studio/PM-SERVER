@@ -59,7 +59,7 @@ function writeJson(filePath, data) {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 }
 
-const slackWebhookUrl = 'https://hooks.slack.com/services/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';
+const slackWebhookUrl = process.env.DATA_SLACK;
 
 axios.post(slackWebhookUrl, {
   text: '*Test Message:* Hello from your PM server 👋'
