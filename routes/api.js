@@ -7,7 +7,8 @@ const dataDir = process.env.DATA_DIR || path.join(__dirname, 'data');
 const projectsFile = path.join(dataDir, 'projects.json');
 const tasksFile = path.join(dataDir, 'tasks.json');
 
-const { broadcastUpdate } = require('../server');
+const { broadcastUpdate } = require('../events');
+
 
 function readJson(filePath) {
   try {

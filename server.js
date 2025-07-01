@@ -7,9 +7,13 @@ require('dotenv').config();
 const axios = require('axios');
 const cron = require('node-cron');
 
+const { initSSE } = require('./events');
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+initSSE(app);
 
 // ✅ Full CORS setup
 app.use((req, res, next) => {
@@ -119,35 +123,6 @@ axios.post(slackWebhookUrl, {
 }).catch(err => {
   console.error('❌ Slack message failed:', err.message);
 });
-
-//connections
-const clients = [];
-
-app.get('/events', (req, res) => {
-  res.set({
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive'
-  });
-  res.flushHeaders();
-
-  clients.push(res);
-
-  req.on('close', () => {
-    const i = clients.indexOf(res);
-    if (i !== -1) clients.splice(i, 1);
-  });
-});
-
-function broadcastUpdate(type, data) {
-  const payload = `event: ${type}\ndata: ${JSON.stringify(data)}\n\n`;
-  clients.forEach(client => client.write(payload));
-}
-
-module.exports = {
-  broadcastUpdate
-};
-
 
 // Home (optional)
 app.get('/', (req, res) => {
