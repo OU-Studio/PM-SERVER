@@ -99,7 +99,12 @@ function getActiveTasksGroupedByProject() {
 
 function formatSlackMessage(groupedTasks) {
   const now = new Date();
-  const timeStr = now.toLocaleTimeString('en-UK', { hour: '2-digit', minute: '2-digit', hour12: true }).toLowerCase();
+const timeStr = new Intl.DateTimeFormat('en-UK', {
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: true,
+  timeZone: 'Europe/London'
+}).format(now).toLowerCase();
   const weekday = now.toLocaleDateString('en-UK', { weekday: 'long' });
   const day = now.getDate();
   const month = now.toLocaleString('en-UK', { month: 'long' });
@@ -146,7 +151,27 @@ const groupedTasks = getActiveTasksGroupedByProject();
 const message = formatSlackMessage(groupedTasks);
 
 // 🕘 Daily Slack update at 9am UK time
-cron.schedule('16 8 * * *', async () => {
+cron.schedule('0 9 * * *', async () => {
+  const groupedTasks = getActiveTasksGroupedByProject();
+  const message = formatSlackMessage(groupedTasks);
+
+  if (!slackWebhookUrl) {
+    console.warn('⚠️ No Slack webhook configured.');
+    return;
+  }
+
+  try {
+    await axios.post(slackWebhookUrl, { text: message });
+    console.log('✅ 9am task summary sent to Slack');
+  } catch (err) {
+    console.error('❌ Failed to send Slack update:', err.message);
+  }
+}, {
+  timezone: 'Europe/London'
+});
+
+// 🕘 Daily Slack update at 9am UK time
+cron.schedule('0 15 * * *', async () => {
   const groupedTasks = getActiveTasksGroupedByProject();
   const message = formatSlackMessage(groupedTasks);
 
