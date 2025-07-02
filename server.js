@@ -13,7 +13,7 @@ const { initSSE } = require('./events');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-initSSE(app);
+
 
 // ✅ Full CORS setup
 app.use((req, res, next) => {
@@ -31,6 +31,8 @@ app.options('*', (req, res) => {
 app.use(express.json());
 
 app.use('/api', require('./routes/api'))
+
+initSSE(app);
 
 
 const dataDir = process.env.DATA_DIR || path.join(__dirname, 'data');
