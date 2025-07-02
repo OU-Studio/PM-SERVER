@@ -98,22 +98,49 @@ function getActiveTasksGroupedByProject() {
 }
 
 function formatSlackMessage(groupedTasks) {
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('en-UK', { hour: '2-digit', minute: '2-digit', hour12: true }).toLowerCase();
+  const weekday = now.toLocaleDateString('en-UK', { weekday: 'long' });
+  const day = now.getDate();
+  const month = now.toLocaleString('en-UK', { month: 'long' });
+  const suffix = (d => (d > 3 && d < 21) ? 'th' : ['st','nd','rd'][d % 10 - 1] || 'th')(day);
+  const header = `${timeStr}, ${weekday} ${day}${suffix} ${month}`;
+
   if (Object.keys(groupedTasks).length === 0) {
-    return '*📝 Active Tasks:*\nNone!';
+    return `*${header}*\n_Current tasks are:_\nNone! 🎉`;
   }
 
-  let message = '*📝 Active Tasks:*\n';
+  let message = `*${header}*\n_Current tasks are:_\n`;
+
+  const today = new Date();
+  const msPerDay = 1000 * 60 * 60 * 24;
 
   for (const [project, tasks] of Object.entries(groupedTasks)) {
     message += `\n*${project}*:\n`;
     for (const task of tasks) {
-      const due = task.dueDate ? ` (due ${task.dueDate})` : '';
-      message += `• ${task.title} – _${task.status}_${due}\n`;
+      let dueLabel = '';
+      if (task.dueDate) {
+        const date = new Date(task.dueDate);
+        const utcDate = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
+        const utcToday = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+        const diffDays = Math.floor((utcDate - utcToday) / msPerDay);
+
+        if (diffDays >= 0 && diffDays <= 6) {
+          dueLabel = ` (due ${date.toLocaleDateString('en-UK', { weekday: 'long' })})`;
+        } else {
+          const d = date.getDate();
+          const suf = (d > 3 && d < 21) ? 'th' : ['st','nd','rd'][d % 10 - 1] || 'th';
+          const m = date.toLocaleString('en-UK', { month: 'long' });
+          dueLabel = ` (due ${d}${suf} ${m})`;
+        }
+      }
+      message += `• ${task.title} – _${task.status}_${dueLabel}\n`;
     }
   }
 
   return message;
 }
+
 
 const groupedTasks = getActiveTasksGroupedByProject();
 const message = formatSlackMessage(groupedTasks);
